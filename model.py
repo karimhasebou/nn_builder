@@ -22,17 +22,16 @@ class Model:
         self.loss = loss
 
     def train(self,x_train,y_train,lr):
-        for i in range(50):
+        for i in range(700):
             x = self.predict(x_train)
             loss = self.loss.val(x,y_train)
             loss_grad = self.loss.grad(x,y_train)
-            self.backprop(x,lr)
+            self.backprop(loss_grad,lr)
             print(loss)
 
     def backprop(self,loss,lr):
         m = len(self.layers) - 1
         for i in range(m,-1,-1):
-            print('layer %d'%i)
             loss = self.layers[i].backprop(loss,lr)
 
     def predict(self,x_train):

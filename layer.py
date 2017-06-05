@@ -29,14 +29,14 @@ class Dense(Layer):
         return self.act_ouput
 
     def backprop(self,x,lr):
-        act_grad = self.act.grad(self.act_input)
-        de_da = act_grad * x
+        de_da = self.act.grad(self.act_input) * x
 
-        dw = np.dot(self.input.T,de_da)
-        da = np.dot(de_da,self.weights.T)
+        dw = np.dot(de_da.T,self.input).T
 
+        de_dz = np.dot(de_da,self.weights[1:].T)
+        
         self.weights -= lr * dw
-        return da
+        return de_dz
 
     def compile(self,shape):
         super(Dense, self).compile(shape)
