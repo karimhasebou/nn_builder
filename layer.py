@@ -1,8 +1,9 @@
-import numpy as np
+import tensorflow as tf
+from init import xavier_init
 
 class Layer:
 
-    def forward(self,input):
+    def forward(self,input,act):
         pass
 
     def backprop(self,input):
@@ -13,40 +14,41 @@ class Layer:
 
     def compile(self,shape):
         pass
-        #del self.shape
 
 class Dense(Layer):
 
     def __init__(self,shape,act):
         self.shape = shape
         self.act = act
+        self.steps = []
 
     def forward(self,x):
-        m = x.shape[0]
-        self.input = np.c_[np.ones((m,1)),x]
-        self.act_input = np.dot(self.input,self.weights)
-        self.act_ouput = self.act.val(self.act_input)
-        return self.act_ouput
+        self.input = x
+        self.act_input = tf.matmul(x, self.w) + self.bias
+        self.act_output = self.act.val(self.act_input)
+        return self.act_output
 
     def backprop(self,x,lr):
-        de_da = self.act.grad(self.act_input) * x
+        de_dz = tf.multiply(x, self.act.grad(self.act_input))
 
-        dw = np.dot(de_da.T,self.input).T
+        w_update = tf.matmul(self.input,de_dz,transpose_a=True)
+        w_update = tf.subtract(self.w, lr * w_update)
 
-        de_dz = np.dot(de_da,self.weights[1:].T)
-        
-        self.weights -= lr * dw
-        return de_dz
+        b_update = tf.reduce_sum(de_dz,axis=0,keep_dims=True)
+        b_update = tf.subtract(self.bias, lr * b_update)
+
+        self.steps = [tf.assign(self.w,w_update),
+                      tf.assign(self.bias,b_update)]
+
+        return tf.matmul(de_dz,self.w,transpose_b=True)
+
+    def get_steps(self):
+        return self.steps
 
     def compile(self,shape):
-        super(Dense, self).compile(shape)
-        epsilion = np.sqrt(6)/np.sqrt(
-            shape[0] + shape[1])
-        self.weights = np.random.rand(shape[0]+1,shape[1]) \
-            * 2 * epsilion - epsilion
+        self.w = xavier_init(shape)
+        self.bias = xavier_init([1,shape[1]])
+
 
     def get_shape(self):
-        if self.shape is None:
-            return self.weights.shape[1]
-        else:
-            return self.shape
+        return self.shape

@@ -1,4 +1,4 @@
-import numpy as np
+import tensorflow as tf
 
 class Activation:
 
@@ -9,30 +9,41 @@ class Activation:
         pass
 
 class Sigmoid(Activation):
-    #@staticmethod
-    def val(self,x):
-        return 1 / (1 + np.exp(-x))
 
-    #@staticmethod
+    def val(self,x):
+        x = tf.multiply(-1.,x)
+        tmp = tf.exp(x)
+        tmp = tf.add(1., tmp)
+        tmp = tf.divide(1., tmp)
+        return tmp
+
+
     def grad(self,x):
         x = self.val(x)
-        return x * (1 - x)
+        return x * (tf.subtract(1., x))
 
 class Relu(Activation):
-    #@staticmethod
-    def val(self,x):
-        return np.maximum(0,x)
 
-    #@staticmethod
+    def val(self,x):
+        return tf.maximum(0,x)
+
+
     def grad(self,x):
-        return (x > 0)
+        return x > 0
 
 class Softmax(Activation):
-    #@staticmethod
-    def val(self,x):
-        grad = np.exp(x - np.max(x,axis=1).reshape(-1,1))
-        return grad/grad.sum(axis=1,keepdims=True)
 
-    #@staticmethod
+    def val(self,x):
+        max = tf.reduce_max(x,axis=1,keep_dims=True)
+        grad = tf.exp(x - max)
+        return grad / tf.reduce_sum(grad,axis=1,keep_dims=True)
+
+
     def grad(self,x):
-        pass
+        # sfx = self.val(x)
+        # two = tf.multiply(-tf.expand_dims(sfx,axis=1),tf.expand_dims(sfx,axis=2))
+        # two = tf.reduce_sum(two,axis=2)
+        # return sfx + two
+        return 1.
+        
+        
