@@ -16,7 +16,7 @@ class Model:
         self.layers[0].compile(shape)
 
         for i in range(1,m):
-            shape = (self.layers[i-1].get_shape(),self.layers[1].get_shape())
+            shape = (self.layers[i-1].get_shape(),self.layers[i].get_shape())
             self.layers[i].compile(shape)
 
         self.loss = loss
