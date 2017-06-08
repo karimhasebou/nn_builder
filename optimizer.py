@@ -20,7 +20,15 @@ class Momentum(Optimizer):
         self.moment = moment
 
     def update(self,weight,gradient):
-        pass
+        self.grad_sum = self.grad_sum * self.moment + \
+             self.lr_callback * gradient
+        return weight - gradient
 
     def compile(self,shape,lr_callback):
-        self.lr_callback = lr_callback
+        super(SGD,self).compile(shape,lr)
+        self.grad_sum = tf.zeros(shape)
+
+class Nestrov(Momentum):
+    
+    def update(self,weight,gradient):
+        pass

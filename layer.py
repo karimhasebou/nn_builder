@@ -52,3 +52,22 @@ class Dense(Layer):
 
     def get_shape(self):
         return self.shape
+
+class Dropout:
+
+    def __init__(self,dropout=0.1):
+        self.dropout = dropout
+
+    def forward(self,x,training=True):
+        if training:
+            self.drop = tf.random_uniform(tf.shape(x)) < self.dropout
+            self.drop = tf.to_float(self.drop) / self.dropout
+            return x * self.drop
+        else:
+            return x
+
+    def backprop(self,x,lr,training=True):
+        if training:
+            return x * self.drop
+        else:
+            return x
