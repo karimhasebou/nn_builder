@@ -25,11 +25,11 @@ class Sigmoid(Activation):
 class Relu(Activation):
 
     def val(self,x):
-        return tf.maximum(0,x)
+        return tf.maximum(0., x)
 
 
     def grad(self,x):
-        return x > 0
+        return tf.cast(x > 0., tf.float32)
 
 class Softmax(Activation):
 

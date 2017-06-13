@@ -9,6 +9,7 @@ class Model:
         self.sess = None
         self.xtr = tf.placeholder(tf.float32)
         self.ytr = tf.placeholder(tf.float32)
+        self.network_mode = None
 
     def __exit__(self):
         if self.sess != None:
@@ -34,6 +35,9 @@ class Model:
 
 
     def setup_model(self,train):
+        if self.network_mode == train:
+            return
+        self.network_mode = train
         #forward pass
         lru = self.setup_forward_pass(train)
         
@@ -63,7 +67,7 @@ class Model:
             self.optimizers[i].update(layer.get_weights(), 
                 layer.get_gradients() )
             self.steps.extend(self.optimizers[i].get_steps())
-    
+
     def train(self,x_train,y_train,epochs):
         self.setup_model(True)
         for i in range(epochs):

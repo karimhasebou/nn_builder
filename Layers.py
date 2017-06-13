@@ -38,12 +38,16 @@ class Dense(Layer):
         self.act = act
 
     def forward(self,x,train=True):
+        if hasattr(self, 'act_output'): # if forward previosly called return tensor created previously
+            return self.act_output      
         self.input = x
         self.act_input = tf.matmul(x, self.w) + self.bias
         self.act_output = self.act.val(self.act_input)
         return self.act_output
 
     def backprop(self,x,train=True):
+        if hasattr(self, 'back_out'):  
+            return self.back_out
         de_dz = tf.multiply(x, self.act.grad(self.act_input))
 
         w_update = tf.matmul(self.input,de_dz,transpose_a=True)
@@ -54,7 +58,8 @@ class Dense(Layer):
         self.gradients['w'] = w_update
         self.gradients['b'] = b_update
 
-        return tf.matmul(de_dz,self.w,transpose_b=True)
+        self.back_out = tf.matmul(de_dz,self.w,transpose_b=True)
+        return self.back_out
 
     def compile(self,in_shape):
         assert len(in_shape) == 1
