@@ -56,16 +56,48 @@ class Dense(Layer):
         self.ws['w'] = self.w
         self.ws['bias'] = self.bias
 
-class BatchNomalization():
+class BatchNomalization(Layer):
+    
+    def __init__(self,episilon=1e-10):
+        self.episilon = episilon
+        self.grad = {}
+        self.ws = {}
 
     def forward(self,x : tf.Tensor,training : bool):
-        pass
+        self.mean = tf.reduce_mean(x, axis=0, keep_dims=True)
+        self.wmean = x - self.mean
+        self.var  = tf.reduce_mean(self.wmean ** 2,
+         axis=0, keep_dims=True)
+        self.std  = tf.sqrt(self.var + self.episilon)
+        self.xhat = self.wmean / self.std
+        return self.gamma * self.xhat + self.beta
 
     def backprop(self,x : tf.Tensor,training : bool):
-        pass
+        m = tf.cast(tf.shape(self.wmean)[0], tf.float32)
+        d_xhat = x * self.gamma
+        d_var  = tf.reduce_sum(d_xhat * self.wmean, axis=0, keep_dims=True) * -0.5 * \
+                tf.pow(self.var + self.episilon, -1.5)
+        
+        d_mean = tf.reduce_sum(d_xhat / -self.std, axis=0, keep_dims=True)
+        d_mean += d_var  * -2 * tf.reduce_mean(self.wmean,
+                                 axis=0,keep_dims=True)
+
+        d_gamma = tf.reduce_sum(self.xhat * x, axis=0, keep_dims=True)
+        d_beta  = tf.reduce_sum(x,axis=0, keep_dims=True)
+
+        d_x  = (d_xhat / self.std) + (d_var * 2 * self.wmean + d_mean) / m
+
+        self.grad["gamma"] = d_gamma
+        self.grad["beta"]  = d_beta
+
+        return d_x
+
 
     def compile(self, shape : list):
         self.shape = shape
-        self.gamma = tf.Variable( tf.ones([1] + shape) )
-        self.beta  = tf.Variable( tf.ones([1] + shape) )
+        self.gamma = tf.Variable(tf.ones([1, *shape], tf.float32) )
+        self.beta  = tf.Variable(tf.ones([1, *shape], tf.float32) )
         self.out_shape = shape
+
+        self.ws["gamma"] = self.gamma
+        self.ws["beta"] = self.beta
