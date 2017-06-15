@@ -1,2 +1,4 @@
-MNIST_data/*
 __pycache__/*
+*.pyc
+MNIST_data/*
+test.py
