@@ -13,10 +13,12 @@ model = Model()
 model.add(Dense(500))
 model.add(BatchNomalization())
 model.add(Sigmoid())
+model.add(Dropout(1))
 
 model.add(Dense(250))
 model.add(BatchNomalization())
 model.add(Sigmoid())
+model.add(Dropout(1))
 
 model.add(Dense(10))
 model.add(BatchNomalization())

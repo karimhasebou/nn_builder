@@ -50,14 +50,37 @@ class Dense(Layer):
 
     def compile(self, in_shape : list):
         assert len(in_shape) == 1
-        
+
         self.w = xavier_init([in_shape[0], self.shape[0] ])
         self.bias = xavier_init([1, self.shape[0] ])
         self.ws['w'] = self.w
         self.ws['bias'] = self.bias
 
+class Dropout(Layer):
+
+    def __init__(self,dropout=0.0):
+        super(Dropout,self).__init__()
+        self.dropout = dropout
+
+    def compile(self,shape):
+        self.shape = shape
+
+    def forward(self,x : tf.Tensor,training : bool):
+        if training:
+            self.drop = tf.random_uniform(tf.shape(x)) > self.dropout
+            self.drop = tf.to_float(self.drop) / self.dropout
+            return x * self.drop
+        else:
+            return x
+
+    def backprop(self,x : tf.Tensor,training : bool):
+        if training:
+            return x * self.drop
+        else:
+            return x
+
 class BatchNomalization(Layer):
-    
+
     def __init__(self,episilon=1e-10):
         self.episilon = episilon
         self.grad = {}
@@ -77,7 +100,7 @@ class BatchNomalization(Layer):
         d_xhat = x * self.gamma
         d_var  = tf.reduce_sum(d_xhat * self.wmean, axis=0, keep_dims=True) * -0.5 * \
                 tf.pow(self.var + self.episilon, -1.5)
-        
+
         d_mean = tf.reduce_sum(d_xhat / -self.std, axis=0, keep_dims=True)
         d_mean += d_var  * -2 * tf.reduce_mean(self.wmean,
                                  axis=0,keep_dims=True)
