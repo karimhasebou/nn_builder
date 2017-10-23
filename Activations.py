@@ -28,10 +28,11 @@ class Softmax(Layer):
         return self.out
 
     def backprop(self, x : tf.Tensor, training : bool):
-        grid = -tf.expand_dims(self.out,axis=2) * tf.expand_dims(self.out,axis=1) * tf.expand_dims(x,axis=2)
-        diag = self.out * (1. - self.out) * x
-        grid = tf.matrix_set_diag(grid,diag)
-        result = tf.reduce_sum(grid,axis=1)
-        return result
+        # grid = -tf.expand_dims(self.out,axis=2) * tf.expand_dims(self.out,axis=1) * tf.expand_dims(x,axis=2)
+        # diag = self.out * (1. - self.out) * x
+        # grid = tf.matrix_set_diag(grid,diag)
+        # result = tf.reduce_sum(grid,axis=1)
+        # return result
+        return tf.multiply(x, self.out) + self.out
 
         
